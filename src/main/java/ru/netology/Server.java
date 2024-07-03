@@ -9,16 +9,22 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Server implements Runnable {
-
+    static List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
     private final Socket socket;
-    private final List <String> validPaths;
+    Map <Map <String, String>, Handler> handlerMap = new HashMap<>();
 
-    public Server(Socket socket, List <String> validPaths) {
+
+    public Server(Socket socket) {
         this.socket = socket;
-        this.validPaths = validPaths;
+    }
+
+    void addHandler(String methodType, String path, Handler handler){
+        handlerMap.put(Map.of(methodType, path),  handler);
     }
 
     @Override
@@ -90,4 +96,6 @@ public class Server implements Runnable {
 
 
     }
+
+
 }
