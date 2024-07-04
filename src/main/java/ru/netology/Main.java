@@ -18,11 +18,11 @@ public class Main {
             while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
                 final var server = new Server(clientSocket);
-//                server.addHandler("GET", "/messages", new Handler() {
-//                    public void handle(Request request, BufferedOutputStream responseStream) {
+                server.addHandler("GET", "/messages", new Handler() {
+                   public void handle(Request request, BufferedOutputStream responseStream) {
 //                        // TODO: handlers code
-//                    }
-//                });
+                    }
+                });
                 executorService.execute(new Server(clientSocket));
             }
         } catch (IOException e) {

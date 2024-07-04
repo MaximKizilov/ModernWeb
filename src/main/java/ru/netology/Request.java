@@ -3,15 +3,15 @@ package ru.netology;
 import java.io.BufferedOutputStream;
 
 public class Request {
-    String methodType;
-    String heading;
-    String body;
+    private String methodType;
+    private String heading;
+    private String body;
 
-    public Request(String methodType, String heading, String body) {
-        this.methodType = methodType;
-        this.heading = heading;
-        this.body = body;
-    }
+//    public Request(String methodType, String heading, String body) {
+//        this.methodType = methodType;
+//        this.heading = heading;
+//        this.body = body;
+//    }
 
     public String getMethodType() {
         return methodType;
