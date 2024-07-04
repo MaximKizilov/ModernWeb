@@ -82,27 +82,7 @@ public class Server implements Runnable {
 //                    return;
 //                }
 //
-//                final var filePath = Path.of(".", "public", path);
-//                final var mimeType = Files.probeContentType(filePath);
-//
-//                // special case for classic
-//                if (path.equals("/classic.html")) {
-//                    final var template = Files.readString(filePath);
-//                    final var content = template.replace(
-//                            "{time}",
-//                            LocalDateTime.now().toString()
-//                    ).getBytes();
-//                    out.write((
-//                            "HTTP/1.1 200 OK\r\n" +
-//                                    "Content-Type: " + mimeType + "\r\n" +
-//                                    "Content-Length: " + content.length + "\r\n" +
-//                                    "Connection: close\r\n" +
-//                                    "\r\n"
-//                    ).getBytes());
-//                    out.write(content);
-//                    out.flush();
-//                    return;
-//                }
+
 //
 //                final var length = Files.size(filePath);
 //                out.write((
