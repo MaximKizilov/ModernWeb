@@ -17,6 +17,8 @@ public class Server implements Runnable {
     private final Socket socket;
     ConcurrentHashMap<Map <String, String>, Handler> handlerMap = new ConcurrentHashMap<>();
 
+    public Server() {
+    }
 
     public Server(Socket socket) {
         this.socket = socket;
