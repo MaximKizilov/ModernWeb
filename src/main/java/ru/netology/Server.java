@@ -1,14 +1,9 @@
 package ru.netology;
 
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,14 +12,12 @@ public class Server implements Runnable {
     private final Socket socket;
     ConcurrentHashMap<Map <String, String>, Handler> handlerMap = new ConcurrentHashMap<>();
 
-    public Server() {
-    }
 
     public Server(Socket socket) {
         this.socket = socket;
     }
 
-    void addHandler(String methodType, String path, Handler handler){
+        void addHandler(String methodType, String path, Handler handler){
         handlerMap.put(Map.of(methodType, path),  handler);
     }
 
@@ -46,65 +39,44 @@ public class Server implements Runnable {
                 }
                 request.setMethodType(parts[0]);
             StringBuilder sb = new StringBuilder();
-            String headersAndBody;
-            while ((headersAndBody = in.readLine()) != null && !headersAndBody.isEmpty()) {
-                sb.append(headersAndBody).append("\n");
+            String headers;
+            while ((headers = in.readLine()) != null && !headers.isEmpty()) {
+                sb.append(headers).append("\n");
             }
             request.setHeading(sb.toString());
-            Set<Map<String, String>> entrySet = handlerMap.keySet();
-            for (Map<String, String> mapkey : entrySet){
-                for (Map.Entry<String, String> pair : mapkey.entrySet()){
-                   if(pair.getKey().equals(request.getMethodType()) && (pair.getValue().equals(request.getHeading()))){
-                       System.out.println(handlerMap.get(mapkey));
+
+            StringBuilder bodyBuilder = new StringBuilder();
+            char[] buffer = new char[1024];
+            int bytesRead;
+            boolean bodyStarted = false;
+            while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
+                if (!bodyStarted) {
+                    String line = new String(buffer, 0, bytesRead);
+                    if (line.contains("\r\n\r\n")) {
+                        bodyStarted = true;
+                        bodyBuilder.append(line, line.indexOf("\r\n\r\n") + 4, bytesRead);
                     }
+                } else {
+                    bodyBuilder.append(buffer, 0, bytesRead);
+                }
+            }
+            InputStream bodyInputStream = new ByteArrayInputStream(bodyBuilder.toString().getBytes(StandardCharsets.UTF_8));
+            request.setBody(bodyInputStream);
+
+            for (Map.Entry<Map<String, String>, Handler> entry : handlerMap.entrySet()) {
+                Map<String, String> mapKey = entry.getKey();
+                Handler handler = entry.getValue();
+                if (mapKey.get("GET").equals(request.getHeading())) {
+                    handler.handle(request, out); // Assuming the Handler interface has a handle method
+                    break; // Exit the loop after finding a matching handler
                 }
             }
 
-
-
-//                // read only request line for simplicity
-//                // must be in form GET /path HTTP/1.1
-//                final var requestLine = in.readLine();
-//                final var parts = requestLine.split(" ");
-//
-//                if (parts.length != 3) {
-//                    // just close socket
-//                    return;
-//                }
-//
-//                final var path = parts[1];
-//                if (!validPaths.contains(path)) {
-//                    out.write((
-//                            "HTTP/1.1 404 Not Found\r\n" +
-//                                    "Content-Length: 0\r\n" +
-//                                    "Connection: close\r\n" +
-//                                    "\r\n"
-//                    ).getBytes());
-//                    out.flush();
-//                    return;
-//                }
-//
-
-//
-//                final var length = Files.size(filePath);
-//                out.write((
-//                        "HTTP/1.1 200 OK\r\n" +
-//                                "Content-Type: " + mimeType + "\r\n" +
-//                                "Content-Length: " + length + "\r\n" +
-//                                "Connection: close\r\n" +
-//                                "\r\n"
-//                ).getBytes());
-//                Files.copy(filePath, out);
-//                out.flush();
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    }
+}
 
 
 

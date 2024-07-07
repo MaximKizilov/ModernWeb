@@ -7,42 +7,42 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
     static ExecutorService executorService = Executors.newFixedThreadPool(64);
-
+    static ConcurrentHashMap<Map<String, String>, Handler> handlerMap = new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
 
         try (ServerSocket serverSocket = new ServerSocket(9999)) {
             while (!serverSocket.isClosed()) {
-                final var server = new Server();
-                server.addHandler("GET", "/messages", new Handler() {
-                    public void handle(Request request, BufferedOutputStream responseStream) {
-                        final var filePath = Path.of(".", "public", "/messages");
-                        final var mimeType = Files.probeContentType(filePath);
-                        final var length = Files.size(filePath);
-                        out.write((
-                                "HTTP/1.1 200 OK\r\n" +
-                                        "Content-Type: " + mimeType + "\r\n" +
-                                        "Content-Length: " + length + "\r\n" +
-                                        "Connection: close\r\n" +
-                                        "\r\n"
-                        ).getBytes());
-                        Files.copy(filePath, out);
-                        out.flush();
-                    }
-                });
                 Socket clientSocket = serverSocket.accept();
+                Server server = new Server(clientSocket);
+                server.addHandler("GET", "/index.html", (request, responseStream) -> {
+                    final var filePath = Path.of(".", "public", "/index.html");
+                    final var mimeType = Files.probeContentType(filePath);
+                    final var length = Files.size(filePath);
+                    responseStream.write((
+                            "HTTP/1.1 200 OK\r\n" +
+                                    "Content-Type: " + mimeType + "\r\n" +
+                                    "Content-Length: " + length + "\r\n" +
+                                    "Connection: close\r\n" +
+                                    "\r\n"
+                    ).getBytes());
+                    Files.copy(filePath, responseStream);
+                    responseStream.flush();
+                });
+                executorService.execute(server);
 
 
-                executorService.execute(new Server(clientSocket));
+
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-
     }
 }

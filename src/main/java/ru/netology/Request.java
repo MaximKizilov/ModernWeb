@@ -1,11 +1,12 @@
 package ru.netology;
 
 import java.io.BufferedOutputStream;
+import java.io.InputStream;
 
 public class Request {
     private String methodType;
     private String heading;
-    private String body;
+    private InputStream body;
 
 //    public Request(String methodType, String heading, String body) {
 //        this.methodType = methodType;
@@ -29,11 +30,11 @@ public class Request {
         this.heading = heading;
     }
 
-    public String getBody() {
+    public InputStream getBody() {
         return body;
     }
 
-    public void setBody(String body) {
+    public void setBody(InputStream body) {
         this.body = body;
     }
 }
