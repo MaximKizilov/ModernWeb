@@ -21,22 +21,21 @@ public class Main {
         try (ServerSocket serverSocket = new ServerSocket(9999)) {
             while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
-                Server server = new Server(clientSocket);
-                server.addHandler("GET", "/index.html", (request, responseStream) -> {
-                    final var filePath = Path.of(".", "public", "/index.html");
-                    final var mimeType = Files.probeContentType(filePath);
-                    final var length = Files.size(filePath);
-                    responseStream.write((
-                            "HTTP/1.1 200 OK\r\n" +
-                                    "Content-Type: " + mimeType + "\r\n" +
-                                    "Content-Length: " + length + "\r\n" +
-                                    "Connection: close\r\n" +
-                                    "\r\n"
-                    ).getBytes());
-                    Files.copy(filePath, responseStream);
-                    responseStream.flush();
-                });
-                executorService.execute(server);
+//                server.addHandler("GET", "/index.html", (request, responseStream) -> {
+//                    final var filePath = Path.of(".", "public", "/index.html");
+//                    final var mimeType = Files.probeContentType(filePath);
+//                    final var length = Files.size(filePath);
+//                    responseStream.write((
+//                            "HTTP/1.1 200 OK\r\n" +
+//                                    "Content-Type: " + mimeType + "\r\n" +
+//                                    "Content-Length: " + length + "\r\n" +
+//                                    "Connection: close\r\n" +
+//                                    "\r\n"
+//                    ).getBytes());
+//                    Files.copy(filePath, responseStream);
+//                    responseStream.flush();
+//                });
+                executorService.execute(new Server(clientSocket));
 
 
 
