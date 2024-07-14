@@ -49,6 +49,7 @@ public class Server implements Runnable {
                             path = mapKey.get(method);
                             Handler handler = handlerMap.get(Map.of(method, path));
                             handler.handle(httpRequest, out);
+                            return;
                         } else {
 
                         }
