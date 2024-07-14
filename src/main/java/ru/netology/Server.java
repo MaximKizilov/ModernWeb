@@ -32,19 +32,20 @@ public class Server implements Runnable {
                 final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 final var out = new BufferedOutputStream(socket.getOutputStream())
         ) {
+            //чтение headers line
             String requestLine = in.readLine();
             if (requestLine != null) {
                 String[] requestComponents = requestLine.split(" ");
                 HttpMethod method = HttpMethod.valueOf(requestComponents[0]);
                 String path = requestComponents[1];
-
+// чтение хэдерсов
                 Map<String, String> headers = new HashMap<>();
                 String headerLine;
                 while ((headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
                     String[] headerComponents = headerLine.split(":", 2);
                     headers.put(headerComponents[0].trim(), headerComponents[1].trim());
                 }
-                // Чтение тела запроса (если есть)
+//чтение боди
                 StringBuilder payload = new StringBuilder();
                 if (in.ready()) {
                     int contentLength = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
@@ -54,21 +55,19 @@ public class Server implements Runnable {
                         payload.append(buffer);
                     }
                 }
-                this.httpRequest = new HttpRequest(method, path, headers, payload.toString());
+                httpRequest = new HttpRequest(method, path, headers, payload.toString());
             }
             for (Map.Entry<Map<HttpMethod, String>, Handler> entry : handlerMap.entrySet()) {
                 Map<HttpMethod, String> mapKey = entry.getKey();
 
                 for (HttpMethod method : mapKey.keySet()) {
-                    if (method.equals(this.httpRequest.methodType())) {
+                    if (method.equals(httpRequest.methodType())) {
                         String path;
-                        if (mapKey.get(method).equals(this.httpRequest.path())) {
+                        if (mapKey.get(method).equals(httpRequest.path())) {
                             path = mapKey.get(method);
                             Handler handler = handlerMap.get(Map.of(method, path));
                             handler.handle(httpRequest, out);
                             return;
-                        } else {
-
                         }
                     }
                 }

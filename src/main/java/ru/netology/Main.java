@@ -22,8 +22,17 @@ public class Main {
                 Server server = new Server(clientSocket);
 
                 Server.addHandler(HttpMethod.GET, "/messages", (request, responseStream) -> {
-                        responseStream.write("HTTP/1.1 200 OK\r\n Server: local   Connection: close\r\n\r\n".getBytes());
+                        responseStream.write(("HTTP/1.1 200 OK\r\n " +
+                                "Server: local \r\n  " +
+                                "Connection: close\r\n\r\n").getBytes());
                         responseStream.flush();
+                });
+                Server.addHandler(HttpMethod.POST, "/messages", (request, responseStream) -> {
+                    responseStream.write(("HTTP/1.1 200 OK\r\n " +
+                            "Server: local \r\n  " +
+                            "Connection: close\r\n\r\n" +
+                            "<h1>Всем привет<h1>").getBytes());
+                    responseStream.flush();
                 });
 
                 executorService.execute(server);
