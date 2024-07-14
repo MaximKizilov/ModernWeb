@@ -20,20 +20,11 @@ public class Main {
             while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
                 Server server = new Server(clientSocket);
-                Server.addHandler("GET", "/classic.html", (request, responseStream) -> {
-                    final var filePath = Path.of(".", "public", "/classic.html");
-                    final var mimeType = Files.probeContentType(filePath);
-                    final var length = Files.size(filePath);
-                    byte[] fileContent = Files.readAllBytes(filePath);
-                    responseStream.write((
-                                    "HTTP/1.1 200 OK\r\n" +
-                                    "Content-Type: " + mimeType + "\r\n" +
-                                    "Content-Length: " + length + "\r\n" +
-                                    "Connection: close\r\n" +
-                                    "\r\n"
-                    ).getBytes());
-                    responseStream.write(fileContent);
-                    responseStream.flush();
+
+                Server.addHandler(HttpMethod.GET, "/messages", (request, responseStream) -> {
+                        responseStream.write("HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n".getBytes());
+                        responseStream.flush();
+
                 });
 
 
@@ -55,6 +46,7 @@ public class Main {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }

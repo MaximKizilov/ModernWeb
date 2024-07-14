@@ -1,6 +1,7 @@
 package ru.netology;
 
 
+import javax.crypto.spec.PSource;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,17 +12,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Server implements Runnable {
-    private static final ConcurrentHashMap<Map<String, String>, Handler> handlerMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Map<HttpMethod, String>, Handler> handlerMap = new ConcurrentHashMap<>();
     static List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
     private final Socket socket;
-    //   private final Handler handler;
 
 
     public Server(Socket socket) {
         this.socket = socket;
     }
 
-    static void addHandler(String methodType, String path, Handler handler) {
+
+    static void addHandler(HttpMethod methodType, String path, Handler handler) {
         handlerMap.put(Map.of(methodType, path), handler);
     }
 
@@ -39,11 +40,11 @@ public class Server implements Runnable {
             }
             HttpRequest httpRequest = new HttpRequest(request.toString());
 
-            for (Map.Entry<Map<String, String>, Handler> entry : handlerMap.entrySet()) {
-                Map<String, String> mapKey = entry.getKey();
+            for (Map.Entry<Map<HttpMethod, String>, Handler> entry : handlerMap.entrySet()) {
+                Map<HttpMethod, String> mapKey = entry.getKey();
 
-                for (String method : mapKey.keySet()) {
-                    if (method.equals(httpRequest.getMethodType().toString())) {
+                for (HttpMethod method : mapKey.keySet()) {
+                    if (method.equals(httpRequest.getMethodType())) {
                         String path;
                         if (mapKey.get(method).equals(httpRequest.getPath())) {
                             path = mapKey.get(method);
@@ -52,15 +53,15 @@ public class Server implements Runnable {
                             return;
                         } else {
 
+
                         }
                     }
-//                    handler.handle(httpRequest, out); // Assuming the Handler interface has a handle method
-//                    break; // Exit the loop after finding a matching handler
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }
