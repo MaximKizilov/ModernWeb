@@ -22,25 +22,10 @@ public class Main {
                 Server server = new Server(clientSocket);
 
                 Server.addHandler(HttpMethod.GET, "/messages", (request, responseStream) -> {
-                        responseStream.write("HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n".getBytes());
+                        responseStream.write("HTTP/1.1 200 OK\r\n Server: local   Connection: close\r\n\r\n".getBytes());
                         responseStream.flush();
-
                 });
 
-
-//                    final var filePath = Path.of(".", "public", "/index.html");
-//                    final var mimeType = Files.probeContentType(filePath);
-//                    final var length = Files.size(filePath);
-//                    responseStream.write((
-//                            "HTTP/1.1 200 OK\r\n" +
-//                                    "Content-Type: " + mimeType + "\r\n" +
-//                                    "Content-Length: " + length + "\r\n" +
-//                                    "Connection: close\r\n" +
-//                                    "\r\n"
-//                    ).getBytes());
-//                    Files.copy(filePath, responseStream);
-//                    responseStream.flush();
-//                });
                 executorService.execute(server);
 
             }

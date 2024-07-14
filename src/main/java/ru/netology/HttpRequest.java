@@ -1,44 +1,54 @@
 package ru.netology;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpRequest {
-    private final static String DELIMITER = "\r\n\r\n";
-    private final static String NEW_LINE = "\r\n";
     private final static String HEADER_DELIMITER = ":";
 
-    private final String message;
 
-    private final HttpMethod methodType;
-    private final String path;
-    private final ConcurrentHashMap<String, String> heading;
-    private final String body;
+    private HttpMethod methodType;
+    private String path;
+    private final Map<String, String> heading;
+    private String body;
 
-    public HttpRequest(String message) {
-        this.message = message;
-
-
-        String[] parts = message.split(DELIMITER);
-        String head = parts[0];
-        String[] headers = head.split(NEW_LINE);
-
-        String[] firstLine = headers[0].split(" ");
-        methodType = HttpMethod.valueOf(firstLine[0]);
-        path = firstLine[1];
-
-        this.heading = new ConcurrentHashMap<>();
-        for (int i = 1; i < headers.length; i++) {
-            String[] headerPart = headers[i].split(HEADER_DELIMITER, 2);
-            heading.put(headerPart[0].trim(), headerPart[1].trim());
+    public HttpRequest(Socket socket) {
+        try (final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            String requestLine = in.readLine();
+            if (requestLine != null) {
+                String[] requestComponents = requestLine.split(" ");
+                methodType = HttpMethod.valueOf(requestComponents[0]);
+                path = requestComponents[1];
+            }
+            heading = new HashMap<>();
+            String headerLine;
+            while ((headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
+                String[] headerComponents = headerLine.split(HEADER_DELIMITER, 2);
+                heading.put(headerComponents[0].trim(), headerComponents[1].trim());
+            }
+            StringBuilder payload = new StringBuilder();
+            if (in.ready()) {
+                int contentLength = Integer.parseInt(heading.getOrDefault("Content-Length", "0"));
+                if (contentLength > 0) {
+                    char[] buffer = new char[contentLength];
+                    in.read(buffer, 0, contentLength);
+                    payload.append(buffer);
+                    body=payload.toString();
+                }else{
+                    body = "";
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        String bodyLength = heading.get("Content-Length");
-        int length = bodyLength != null ? Integer.parseInt(bodyLength) : 0;
-        this.body = parts.length > 1 ? parts[1].trim().substring(0, length) : "";
     }
 
-    public String getMessage() {
-        return message;
-    }
+
 
     public HttpMethod getMethodType() {
         return methodType;
@@ -48,7 +58,7 @@ public class HttpRequest {
         return path;
     }
 
-    public ConcurrentHashMap<String, String> getHeading() {
+    public Map<String, String> getHeading() {
         return heading;
     }
 
@@ -56,3 +66,4 @@ public class HttpRequest {
         return body;
     }
 }
+

@@ -29,16 +29,9 @@ public class Server implements Runnable {
     @Override
     public void run() {
 
-        try (
-                final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                final var out = new BufferedOutputStream(socket.getOutputStream())
-        ) {
-            StringBuilder request = new StringBuilder();
-            int value;
-            while ((value = in.read()) != -1) {
-                request.append((char) value);
-            }
-            HttpRequest httpRequest = new HttpRequest(request.toString());
+        try (final var out = new BufferedOutputStream(socket.getOutputStream())) {
+
+            HttpRequest httpRequest = new HttpRequest(socket);
 
             for (Map.Entry<Map<HttpMethod, String>, Handler> entry : handlerMap.entrySet()) {
                 Map<HttpMethod, String> mapKey = entry.getKey();
@@ -50,9 +43,7 @@ public class Server implements Runnable {
                             path = mapKey.get(method);
                             Handler handler = handlerMap.get(Map.of(method, path));
                             handler.handle(httpRequest, out);
-                            return;
                         } else {
-
 
                         }
                     }
