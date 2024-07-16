@@ -1,11 +1,18 @@
 package ru.netology;
 
 
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +44,17 @@ public class Server implements Runnable {
             if (requestLine != null) {
                 String[] requestComponents = requestLine.split(" ");
                 HttpMethod method = HttpMethod.valueOf(requestComponents[0]);
-                String path = requestComponents[1];
-// чтение хэдерсов
+                String pathAndQuery = requestComponents[1];
+                String path;
+                if(pathAndQuery.contains("?")){
+                    String[] s = pathAndQuery.split(("\\?"), 2);
+                     path = s[0];
+                    getQueryParam(s[1]);
+                }else {
+                    path = pathAndQuery;
+                }
+
+
                 Map<String, String> headers = new HashMap<>();
                 String headerLine;
                 while ((headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
@@ -73,7 +89,7 @@ public class Server implements Runnable {
                     }
                 }
             } else {
-                out.write(("HTTP/1.1 404 \r\n " +
+                out.write(("HTTP/1.1 404 Not found \r\n " +
                         "Server: local \r\n  " +
                         "Connection: close\r\n\r\n" +
                         "<h1>Not found<h1>").getBytes());
@@ -82,6 +98,15 @@ public class Server implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public static List<NameValuePair> getQueryParam(String line){
+        String[] multiQuery = line.split("\\?");
+        for (String s : multiQuery) {
+            if (s.contains("=")) {
+                return URLEncodedUtils.parse(s, StandardCharsets.UTF_8);
+            }
+        }
+        return List.of();
     }
 }
 
