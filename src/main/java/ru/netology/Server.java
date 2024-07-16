@@ -57,20 +57,27 @@ public class Server implements Runnable {
                 }
                 httpRequest = new HttpRequest(method, path, headers, payload.toString());
             }
-            for (Map.Entry<Map<HttpMethod, String>, Handler> entry : handlerMap.entrySet()) {
-                Map<HttpMethod, String> mapKey = entry.getKey();
-
-                for (HttpMethod method : mapKey.keySet()) {
-                    if (method.equals(httpRequest.methodType())) {
-                        String path;
-                        if (mapKey.get(method).equals(httpRequest.path())) {
-                            path = mapKey.get(method);
-                            Handler handler = handlerMap.get(Map.of(method, path));
-                            handler.handle(httpRequest, out);
-                            return;
+            if (httpRequest != null) {
+                for (Map.Entry<Map<HttpMethod, String>, Handler> entry : handlerMap.entrySet()) {
+                    Map<HttpMethod, String> mapKey = entry.getKey();
+                    for (HttpMethod method : mapKey.keySet()) {
+                        if (method.equals(httpRequest.methodType())) {
+                            String path;
+                            if (mapKey.get(method).equals(httpRequest.path())) {
+                                path = mapKey.get(method);
+                                Handler handler = handlerMap.get(Map.of(method, path));
+                                handler.handle(httpRequest, out);
+                                return;
+                            }
                         }
                     }
                 }
+            } else {
+                out.write(("HTTP/1.1 404 \r\n " +
+                        "Server: local \r\n  " +
+                        "Connection: close\r\n\r\n" +
+                        "<h1>Not found<h1>").getBytes());
+                out.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();

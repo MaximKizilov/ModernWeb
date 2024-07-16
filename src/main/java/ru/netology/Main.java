@@ -3,8 +3,6 @@ package ru.netology;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -22,16 +20,17 @@ public class Main {
                 Server server = new Server(clientSocket);
 
                 Server.addHandler(HttpMethod.GET, "/messages", (request, responseStream) -> {
-                        responseStream.write(("HTTP/1.1 200 OK\r\n " +
-                                "Server: local \r\n  " +
-                                "Connection: close\r\n\r\n").getBytes());
-                        responseStream.flush();
+                    responseStream.write(("HTTP/1.1 200 OK\r\n " +
+                            "Server: local \r\n  " +
+                            "Connection: close\r\n\r\n" +
+                            "<h1>Hello<h1>").getBytes());
+                    responseStream.flush();
                 });
                 Server.addHandler(HttpMethod.POST, "/messages", (request, responseStream) -> {
                     responseStream.write(("HTTP/1.1 200 OK\r\n " +
                             "Server: local \r\n  " +
                             "Connection: close\r\n\r\n" +
-                            "<h1>Всем привет<h1>").getBytes());
+                            "<h1>Hello<h1>").getBytes());
                     responseStream.flush();
                 });
 
