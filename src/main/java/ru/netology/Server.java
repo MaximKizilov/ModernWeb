@@ -46,10 +46,11 @@ public class Server implements Runnable {
                 HttpMethod method = HttpMethod.valueOf(requestComponents[0]);
                 String pathAndQuery = requestComponents[1];
                 String path;
+                List<NameValuePair> query = List.of();
                 if(pathAndQuery.contains("?")){
                     String[] s = pathAndQuery.split(("\\?"), 2);
                      path = s[0];
-                    getQueryParam(s[1]);
+                    query=queryParam(s[1]);
                 }else {
                     path = pathAndQuery;
                 }
@@ -71,7 +72,7 @@ public class Server implements Runnable {
                         payload.append(buffer);
                     }
                 }
-                httpRequest = new HttpRequest(method, path, headers, payload.toString());
+                httpRequest = new HttpRequest(method, path, query, headers, payload.toString());
             }
             if (httpRequest != null) {
                 for (Map.Entry<Map<HttpMethod, String>, Handler> entry : handlerMap.entrySet()) {
@@ -99,7 +100,7 @@ public class Server implements Runnable {
             e.printStackTrace();
         }
     }
-    public static List<NameValuePair> getQueryParam(String line){
+    public static List<NameValuePair> queryParam(String line){
         String[] multiQuery = line.split("\\?");
         for (String s : multiQuery) {
             if (s.contains("=")) {
